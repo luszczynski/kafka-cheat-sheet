@@ -46,9 +46,18 @@ $KAFKA_BIN/kafka-topics.sh \
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --alter \
-    --entity-type topics \
-    --entity-name <topic_name> \
-    --add-config retention.ms=1000
+    --topic <topic_name>\
+    --config retention.ms=1000
+```
+
+#### Alter min.insync.replicas
+
+```bash
+$KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --alter \
+    --topic <topic_name> \
+    --config min.insync.replicas=2
 ```
 
 #### Delete retention time
