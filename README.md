@@ -189,13 +189,24 @@ $KAFKA_BIN/kafka-consumer-groups \
 # There are many other resetting options
 # --shift-by <positive_or_negative_integer> / --to-current / --to-latest / --to-offset <offset_integer>
 # --to-datetime <datetime_string> --by-duration <duration_string>
-$KAFKA_BIN/kafka-consumer-groups \
+$KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER:9092 \
     --group <group_id> \
     --topic <topic_name> \
     --reset-offsets \
     --to-earliest \
     --execute
+```
+
+### Reset offset from all consumer groups
+
+```bash
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER:9092 \
+    --all-groups \
+    --reset-offsets \
+    --topic <topic_name> \
+    --to-earliest
 ```
 
 ### Describe consumer group
@@ -211,7 +222,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 ```bash
 $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
-    --zookeeper localhost:2181 \
+    --zookeeper $ZOOKEEPER_HOST:2181 \
     --group <group_id> \
     --topic <topic_name>
 ```
