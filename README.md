@@ -2,9 +2,11 @@
 
 First, set your kafka home environment.
 
+```bash
 KAFKA_BIN=/opt/kafka/bin
 ZOOKEEPER_HOST=ip-zookeeper
 BROKER_HOST=ip-broker
+```
 
 ## Topic Operations
 
