@@ -23,7 +23,7 @@ $KAFKA_BIN/kafka-topics.sh \
 ```bash
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
-    --topic first_topic \
+    --topic <topic_name> \
     --describe
 ```
 
@@ -35,7 +35,7 @@ $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --replication-factor 1 \
     --partitions 1 \
-    --topic my-topic
+    --topic <topic_name>
 ```
 
 ### Alter topic
@@ -47,7 +47,7 @@ $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --alter \
     --entity-type topics \
-    --entity-name my-topic \
+    --entity-name <topic_name> \
     --add-config retention.ms=1000
 ```
 
@@ -58,7 +58,7 @@ $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --alter \
     --entity-type topics \
-    --entity-name my-topic \
+    --entity-name <topic_name> \
     --delete-config retention.ms
 ```
 
@@ -77,7 +77,7 @@ $KAFKA_BIN/kafka-topics.sh \
 $KAFKA_BIN/kafka-topics.sh \
     --delete \
     --zookeeper $ZOOKEEPER_HOST:2181 \
-    --topic my-topic
+    --topic <topic_name>
 ```
 
 ### Get earlist offset
@@ -86,7 +86,7 @@ $KAFKA_BIN/kafka-topics.sh \
 $KAFKA_BIN/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
     --broker-list $BROKER_HOST:9092 \
-    --topic mytopic \
+    --topic <topic_name> \
     --time -2
 ```
 
@@ -96,7 +96,7 @@ $KAFKA_BIN/kafka-run-class.sh \
 $KAFKA_BIN/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
     --broker-list $BROKER_HOST:9092 \
-    --topic mytopic \
+    --topic <topic_name> \
     --time -1
 ```
 
@@ -107,7 +107,7 @@ $KAFKA_BIN/kafka-run-class.sh \
 ```bash
 $KAFKA_BIN/kafka-topics.sh \
     --alter \
-    --topic my-topic \
+    --topic <topic_name> \
     --partitions 8
 ```
 
@@ -141,7 +141,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 ```bash
 $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
-    --topic my-topic \
+    --topic <topic_name> \
     --from-beginning
 ```
 
@@ -150,7 +150,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 ```bash
 $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
-    --topic my-topic \
+    --topic <topic_name> \
     --max-messages 1
 ```
 
@@ -168,7 +168,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 
 ```bash
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --topic my-topic \
+    --topic <topic_name> \
     --new-consumer \
     --bootstrap-server $BROKER_HOST:9092 \
     --consumer-property group.id=my-group
@@ -179,7 +179,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 ```bash
 $KAFKA_BIN/kafka-consumer-groups \
     --bootstrap-server $BROKER_HOST:9092 \
-    --group mygroup \
+    --group <group_id> \
     --describe
 ```
 
@@ -204,7 +204,7 @@ $KAFKA_BIN/kafka-consumer-groups \
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --describe \
-    --group my-group
+    --group <group_id>
 ```
 
 ### Check offset for consumer group
@@ -212,8 +212,8 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 ```bash
 $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
     --zookeeper localhost:2181 \
-    --group my-group \
-    --topic my-topic
+    --group <group_id> \
+    --topic <topic_name>
 ```
 
 ## Producer
@@ -223,7 +223,7 @@ $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
 ```bash
 $KAFKA_BIN/kafka-console-producer.sh \
     --broker-list $BROKER_HOST:9092 \
-    --topic my-topic < messages.txt
+    --topic <topic_name> < messages.txt
 ```
 
 ### Send message using standard input
@@ -231,7 +231,7 @@ $KAFKA_BIN/kafka-console-producer.sh \
 ```bash
 $KAFKA_BIN/kafka-console-producer \
     --broker-list $BROKER_HOST:9092 \
-    --topic my-topic
+    --topic <topic_name>
 ```
 
 ### Send message using string
@@ -239,7 +239,7 @@ $KAFKA_BIN/kafka-console-producer \
 ```bash
 echo "My Message" | $KAFKA_BIN/kafka-console-producer.sh \
     --broker-list $BROKER_HOST:9092 \
-    --topic my-topic
+    --topic <topic_name>
 ```
 
 ## ACLs
@@ -250,8 +250,8 @@ $KAFKA_BIN/kafka-acls.sh \
     --add \
     --allow-principal User:Gus \
     --consumer \
-    --topic my-topic \
-    --group my-group
+    --topic <topic_name> \
+    --group <group_id>
 ```
 
 ```bash
@@ -260,7 +260,7 @@ $KAFKA_BIN/kafka-acls.sh
     --add \
     --allow-principal User:Gus \
     --producer \
-    --topic my-topic
+    --topic <topic_name>
 ```
 
 ### List topics ACLs
@@ -269,5 +269,5 @@ $KAFKA_BIN/kafka-acls.sh
 $KAFKA_BIN/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST:2181 \
     --list \
-    --topic my-topic
+    --topic <topic_name>
 ```
