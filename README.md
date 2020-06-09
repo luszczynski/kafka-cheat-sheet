@@ -8,6 +8,26 @@ ZOOKEEPER_HOST=ip-zookeeper
 BROKER_HOST=ip-broker
 ```
 
+## Broker Operations
+
+### List active brokers
+
+```bash
+$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/ids
+```
+
+### List broker details
+
+```bash
+$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/ids/{id}
+```
+
+### List topics
+
+```bash
+$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/topics
+```
+
 ## Topic Operations
 
 ### List topics
@@ -66,8 +86,7 @@ $KAFKA_BIN/kafka-topics.sh \
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --alter \
-    --entity-type topics \
-    --entity-name <topic_name> \
+    --topic <topic_name> \
     --delete-config retention.ms
 ```
 
@@ -89,7 +108,7 @@ $KAFKA_BIN/kafka-topics.sh \
     --topic <topic_name>
 ```
 
-### Get earlist offset
+### Get earliest offset
 
 ```bash
 $KAFKA_BIN/kafka-run-class.sh \
@@ -134,14 +153,31 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
     --verify
 ```
 
+### List unavailable partitions
+
+```bash
+$KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --describe \
+    --unavailable-partitions
+```
+
 ## Consumer
 
 ### List consumer groups
 
 ```bash
-$KAFKA_BIN/kafka-console-consumer.sh \
-    --new-consumer \
+$KAFKA_BIN/kafka-consumer-groups.sh \
     --list \
+    --bootstrap-server $BROKER_HOST:9092
+```
+
+### Describe consumer groups
+
+```bash
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --describe \
+    --group <group_id> \
     --bootstrap-server $BROKER_HOST:9092
 ```
 
@@ -152,6 +188,14 @@ $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --topic <topic_name> \
     --from-beginning
+```
+
+### Consuming message from the end
+
+```bash
+$KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST:9092 \
+    --topic <topic_name>
 ```
 
 ### Read one message
@@ -169,37 +213,38 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --topic __consumer_offsets \
-    --formatter 'kafka.coordinator.GroupMetadataManager$OffsetsMessageFormatter' \
+    --formatter 'kafka.coordinator.group.GroupMetadataManager$OffsetsMessageFormatter' \
     --max-messages 1
 ```
 
 ### Consume using consumer group
 
 ```bash
-$KAFKA_BIN/kafka-consumer-groups.sh \
+$KAFKA_BIN/kafka-console-consumer.sh \
     --topic <topic_name> \
-    --new-consumer \
     --bootstrap-server $BROKER_HOST:9092 \
-    --consumer-property group.id=my-group
+    --group <group-id>
 ```
 
 ### Topics to which group is subscribed
 
 ```bash
-$KAFKA_BIN/kafka-consumer-groups \
+$KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --group <group_id> \
     --describe
 ```
 
-### Reset offset for a consumer group in a topic
+### Reset offset
+
+#### Reset offset for a consumer group in a topic
 
 ```bash
 # There are many other resetting options
 # --shift-by <positive_or_negative_integer> / --to-current / --to-latest / --to-offset <offset_integer>
 # --to-datetime <datetime_string> --by-duration <duration_string>
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER:9092 \
+    --bootstrap-server $BROKER_HOST:9092 \
     --group <group_id> \
     --topic <topic_name> \
     --reset-offsets \
@@ -207,15 +252,39 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
     --execute
 ```
 
-### Reset offset from all consumer groups
+#### Reset offset from all consumer groups
 
 ```bash
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER:9092 \
+    --bootstrap-server $BROKER_HOST:9092 \
     --all-groups \
     --reset-offsets \
     --topic <topic_name> \
     --to-earliest
+```
+
+#### Forward by 2 for example
+
+```bash
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST:9092 \
+    --group <groud_id> \
+    --reset-offsets \
+    --shift-by 2 \
+    --execute \
+    --topic <topic_name>
+```
+
+#### Backward by 2 for example
+
+```bash
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST:9092 \
+    --group <groud_id> \
+    --reset-offsets \
+    --shift-by -2 \
+    --execute \
+    --topic <topic_name>
 ```
 
 ### Describe consumer group
@@ -260,6 +329,15 @@ $KAFKA_BIN/kafka-console-producer \
 echo "My Message" | $KAFKA_BIN/kafka-console-producer.sh \
     --broker-list $BROKER_HOST:9092 \
     --topic <topic_name>
+```
+
+### Send message using ack=all
+
+```bash
+$KAFKA_BIN/kafka-console-producer.sh \
+    --broker-list $BROKER_HOST:9092 \
+    --topic <topic_name> \
+    --producer-property acks=all
 ```
 
 ## ACLs
