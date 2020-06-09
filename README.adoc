@@ -2,7 +2,7 @@
 :toc:
 :toc-placement!:
 
-Here you have some usuful commands for kafka.
+Here you have some useful commands for kafka.
 
 toc::[]
 
