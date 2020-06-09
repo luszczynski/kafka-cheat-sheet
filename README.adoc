@@ -1,147 +1,171 @@
-# Kafka Cheat Sheet
+= Kafka Cheat Sheet
+:toc:
+:toc-placement!:
 
-First, set your kafka home environment.
+Here you have some usuful commands for kafka.
 
-```bash
+toc::[]
+
+== Pre-req
+
+First, set some kafka environment vars.
+
+[source,bash]
+----
 KAFKA_BIN=/opt/kafka/bin
 ZOOKEEPER_HOST=ip-zookeeper
 BROKER_HOST=ip-broker
-```
+----
 
-## Broker Operations
+== Broker Operations
 
-### List active brokers
+=== List active brokers
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/ids
-```
+----
 
-### List broker details
+=== List broker details
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/ids/{id}
-```
+----
 
-### List topics
+=== List topics
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/topics
-```
+----
 
-## Topic Operations
+== Topic Operations
 
-### List topics
+=== List topics using kafka-topics.sh
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --list \
     --zookeeper $ZOOKEEPER_HOST:2181
-```
+----
 
-### Describe topic
+=== Describe topic
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --topic <topic_name> \
     --describe
-```
+----
 
-### Create topic
+=== Create topic
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --create \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --replication-factor 1 \
     --partitions 1 \
     --topic <topic_name>
-```
+----
 
-### Alter topic
+=== Alter topic
 
-#### Alter retention time
+==== Alter retention time
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --alter \
     --topic <topic_name>\
     --config retention.ms=1000
-```
+----
 
-#### Alter min.insync.replicas
+==== Alter min.insync.replicas
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --alter \
     --topic <topic_name> \
     --config min.insync.replicas=2
-```
+----
 
-#### Delete retention time
+==== Delete retention time
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --alter \
     --topic <topic_name> \
     --delete-config retention.ms
-```
+----
 
-### List topics under-replicated
+=== List topics under-replicated
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --describe \
     --under-replicated-partitions
-```
+----
 
-### Delete topic
+=== Delete topic
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --delete \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --topic <topic_name>
-```
+----
 
-### Get earliest offset
+=== Get earliest offset
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
     --broker-list $BROKER_HOST:9092 \
     --topic <topic_name> \
     --time -2
-```
+----
 
-### Get latest offset
+=== Get latest offset
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
     --broker-list $BROKER_HOST:9092 \
     --topic <topic_name> \
     --time -1
-```
+----
 
-## Partition Operations
+== Partition Operations
 
-### Add partitions
+=== Add partitions
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --alter \
     --topic <topic_name> \
     --partitions 8
-```
+----
 
-### Reassign partitions
+=== Reassign partitions
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --reassignment-json-file increase-replication-factor.json  \
@@ -151,95 +175,105 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --reassignment-json-file increase-replication-factor.json  \
     --verify
-```
+----
 
-### List unavailable partitions
+=== List unavailable partitions
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --describe \
     --unavailable-partitions
-```
+----
 
-## Consumer
+== Consumer
 
-### List consumer groups
+=== List consumer groups
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --list \
     --bootstrap-server $BROKER_HOST:9092
-```
+----
 
-### Describe consumer groups
+=== Describe consumer groups
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --describe \
     --group <group_id> \
     --bootstrap-server $BROKER_HOST:9092
-```
+----
 
-### Consuming message from the beginning
+=== Consuming message from the beginning
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --topic <topic_name> \
     --from-beginning
-```
+----
 
-### Consuming message from the end
+=== Consuming message from the end
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --topic <topic_name>
-```
+----
 
-### Read one message
+=== Read one message
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --topic <topic_name> \
     --max-messages 1
-```
+----
 
-### Read from __consumer_offsets
+=== Read from __consumer_offsets
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --topic __consumer_offsets \
     --formatter 'kafka.coordinator.group.GroupMetadataManager$OffsetsMessageFormatter' \
     --max-messages 1
-```
+----
 
-### Consume using consumer group
+=== Consume using consumer group
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-consumer.sh \
     --topic <topic_name> \
     --bootstrap-server $BROKER_HOST:9092 \
     --group <group-id>
-```
+----
 
-### Topics to which group is subscribed
+=== Topics to which group is subscribed
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --group <group_id> \
     --describe
-```
+----
 
-### Reset offset
+=== Reset offset
 
-#### Reset offset for a consumer group in a topic
+==== Reset offset for a consumer group in a topic
 
-```bash
+[source,bash]
+----
 # There are many other resetting options
 # --shift-by <positive_or_negative_integer> / --to-current / --to-latest / --to-offset <offset_integer>
 # --to-datetime <datetime_string> --by-duration <duration_string>
@@ -250,22 +284,24 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
     --reset-offsets \
     --to-earliest \
     --execute
-```
+----
 
-#### Reset offset from all consumer groups
+==== Reset offset from all consumer groups
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --all-groups \
     --reset-offsets \
     --topic <topic_name> \
     --to-earliest
-```
+----
 
-#### Forward by 2 for example
+==== Forward by 2 for example
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --group <groud_id> \
@@ -273,11 +309,12 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
     --shift-by 2 \
     --execute \
     --topic <topic_name>
-```
+----
 
-#### Backward by 2 for example
+==== Backward by 2 for example
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --group <groud_id> \
@@ -285,64 +322,71 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
     --shift-by -2 \
     --execute \
     --topic <topic_name>
-```
+----
 
-### Describe consumer group
+=== Describe consumer group
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST:9092 \
     --describe \
     --group <group_id>
-```
+----
 
-### Check offset for consumer group
+=== Check offset for consumer group
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
     --zookeeper $ZOOKEEPER_HOST:2181 \
     --group <group_id> \
     --topic <topic_name>
-```
+----
 
-## Producer
+== Producer
 
-### Send message using file
+=== Send message using file
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-producer.sh \
     --broker-list $BROKER_HOST:9092 \
     --topic <topic_name> < messages.txt
-```
+----
 
-### Send message using standard input
+=== Send message using standard input
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-producer \
     --broker-list $BROKER_HOST:9092 \
     --topic <topic_name>
-```
+----
 
-### Send message using string
+=== Send message using string
 
-```bash
+[source,bash]
+----
 echo "My Message" | $KAFKA_BIN/kafka-console-producer.sh \
     --broker-list $BROKER_HOST:9092 \
     --topic <topic_name>
-```
+----
 
-### Send message using ack=all
+=== Send message using ack=all
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-console-producer.sh \
     --broker-list $BROKER_HOST:9092 \
     --topic <topic_name> \
     --producer-property acks=all
-```
+----
 
-## ACLs
+== ACLs
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST:2181 \
     --add \
@@ -350,22 +394,24 @@ $KAFKA_BIN/kafka-acls.sh \
     --consumer \
     --topic <topic_name> \
     --group <group_id>
-```
+----
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-acls.sh
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST:2181 \
     --add \
     --allow-principal User:Gus \
     --producer \
     --topic <topic_name>
-```
+----
 
-### List topics ACLs
+=== List topics ACLs
 
-```bash
+[source,bash]
+----
 $KAFKA_BIN/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST:2181 \
     --list \
     --topic <topic_name>
-```
+----
