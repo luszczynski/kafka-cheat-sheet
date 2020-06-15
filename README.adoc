@@ -19,6 +19,13 @@ BROKER_HOST=ip-broker
 
 == Zookeeper Operations
 
+You need to whitelist all the commands bellow. 
+
+.zookeeper.properties
+----
+4lw.commands.whitelist=stat,ruok,reqs,envi,dump,conf,cons,srvr,wchs,wchc,dirs,wchp,mntr,isro
+----
+
 === Get runtime conf
 
 [source,bash]
