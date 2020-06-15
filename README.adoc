@@ -26,6 +26,22 @@ You need to whitelist all the commands bellow.
 4lw.commands.whitelist=stat,ruok,reqs,envi,dump,conf,cons,srvr,wchs,wchc,dirs,wchp,mntr,isro
 ----
 
+If using auth on Zookeeper
+
+----
+# Zookeeper Auth
+KAFKA_OPTS="-Djava.security.auth.login.config=/tmp/jaas.conf"
+----
+
+.jass.conf
+----
+Client {
+       org.apache.zookeeper.server.auth.DigestLoginModule required
+       username="test"
+       password="test";
+}
+----
+
 === Get runtime conf
 
 [source,bash]
@@ -72,7 +88,7 @@ echo srvr | curl telnet://$ZOOKEEPER_HOST:2181
 echo wchs | curl telnet://$ZOOKEEPER_HOST:2181
 ----
 
-=== Brief info about watches
+=== Details about watches
 
 [source,bash]
 ----
