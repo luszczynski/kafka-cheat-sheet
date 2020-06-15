@@ -17,6 +17,89 @@ ZOOKEEPER_HOST=ip-zookeeper
 BROKER_HOST=ip-broker
 ----
 
+== Zookeeper Operations
+
+=== Get runtime conf
+
+[source,bash]
+----
+echo conf | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Get runtime environments
+
+[source,bash]
+----
+echo envi | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Health Check
+
+[source,bash]
+----
+echo stats | curl telnet://$ZOOKEEPER_HOST:2181
+
+echo ruok | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Connections
+
+[source,bash]
+----
+echo reqs | curl telnet://$ZOOKEEPER_HOST:2181
+
+echo cons | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Details of the server
+
+[source,bash]
+----
+echo srvr | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Brief info about watches
+
+[source,bash]
+----
+echo wchs | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Brief info about watches
+
+[source,bash]
+----
+echo wchc | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Snapshots info
+
+[source,bash]
+----
+echo dirs | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Monitoring vars
+
+[source,bash]
+----
+echo mntr | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Get read-only or read-write mode
+
+[source,bash]
+----
+echo isro | curl telnet://$ZOOKEEPER_HOST:2181
+----
+
+=== Get Process
+
+[source,bash]
+----
+jps | grep QuorumPeerMain
+----
+
 == Broker Operations
 
 === List active brokers
