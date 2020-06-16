@@ -39,7 +39,7 @@ Client {
        org.apache.zookeeper.server.auth.DigestLoginModule required
        username="test"
        password="test";
-}
+};
 ----
 
 === Get runtime conf
