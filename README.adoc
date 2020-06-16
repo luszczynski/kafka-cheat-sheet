@@ -28,11 +28,12 @@ You need to whitelist all the commands bellow.
 4lw.commands.whitelist=stat,ruok,reqs,envi,dump,conf,cons,srvr,wchs,wchc,dirs,wchp,mntr,isro
 ----
 
-If using Zookeeper Auth
+* If using Zookeeper Auth (SASL)
 
+[source,bash]
 ----
 # Zookeeper Auth
-KAFKA_OPTS="-Djava.security.auth.login.config=/tmp/jaas.conf"
+export KAFKA_OPTS="-Djava.security.auth.login.config=/tmp/jaas.conf"
 ----
 
 .jass.conf
@@ -43,6 +44,15 @@ Client {
        password="test";
 };
 ----
+
+* If using SSL/TLS on Zookeeper + SASL
+
+[source,bash]
+----
+export KAFKA_OPTS="-Djava.security.auth.login.config=/tmp/jaas.conf -Dzookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty -Dzookeeper.client.secure=true -Dzookeeper.ssl.trustStore.location=/tmp/kafka.server.truststore -Dzookeeper.ssl.trustStore.password=mypass -Dzookeeper.ssl.trustStore.type=PKCS12"
+----
+
+NOTE: Remember to change your zookeeper port on the `ZOOKEEPER_HOST` if necessary
 
 === Get runtime conf
 
