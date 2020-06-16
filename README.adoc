@@ -4,6 +4,8 @@
 
 Here you have some useful commands for kafka.
 
+Tested on Kafka 2.5
+
 toc::[]
 
 == Pre-req
@@ -13,8 +15,8 @@ First, set some kafka environment vars.
 [source,bash]
 ----
 KAFKA_BIN=/opt/kafka/bin
-ZOOKEEPER_HOST=ip-zookeeper
-BROKER_HOST=ip-broker
+ZOOKEEPER_HOST=zookeeper-host:2181
+BROKER_HOST=broker-host:9092
 ----
 
 == Zookeeper Operations
@@ -26,7 +28,7 @@ You need to whitelist all the commands bellow.
 4lw.commands.whitelist=stat,ruok,reqs,envi,dump,conf,cons,srvr,wchs,wchc,dirs,wchp,mntr,isro
 ----
 
-If using auth on Zookeeper
+If using Zookeeper Auth
 
 ----
 # Zookeeper Auth
@@ -46,74 +48,74 @@ Client {
 
 [source,bash]
 ----
-echo conf | curl telnet://$ZOOKEEPER_HOST:2181
+echo conf | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Get runtime environments
 
 [source,bash]
 ----
-echo envi | curl telnet://$ZOOKEEPER_HOST:2181
+echo envi | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Health Check
 
 [source,bash]
 ----
-echo stats | curl telnet://$ZOOKEEPER_HOST:2181
+echo stats | curl telnet://$ZOOKEEPER_HOST
 
-echo ruok | curl telnet://$ZOOKEEPER_HOST:2181
+echo ruok | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Connections
 
 [source,bash]
 ----
-echo reqs | curl telnet://$ZOOKEEPER_HOST:2181
+echo reqs | curl telnet://$ZOOKEEPER_HOST
 
-echo cons | curl telnet://$ZOOKEEPER_HOST:2181
+echo cons | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Details of the server
 
 [source,bash]
 ----
-echo srvr | curl telnet://$ZOOKEEPER_HOST:2181
+echo srvr | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Brief info about watches
 
 [source,bash]
 ----
-echo wchs | curl telnet://$ZOOKEEPER_HOST:2181
+echo wchs | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Details about watches
 
 [source,bash]
 ----
-echo wchc | curl telnet://$ZOOKEEPER_HOST:2181
+echo wchc | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Snapshots info
 
 [source,bash]
 ----
-echo dirs | curl telnet://$ZOOKEEPER_HOST:2181
+echo dirs | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Monitoring vars
 
 [source,bash]
 ----
-echo mntr | curl telnet://$ZOOKEEPER_HOST:2181
+echo mntr | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Get read-only or read-write mode
 
 [source,bash]
 ----
-echo isro | curl telnet://$ZOOKEEPER_HOST:2181
+echo isro | curl telnet://$ZOOKEEPER_HOST
 ----
 
 === Get Process
@@ -129,21 +131,21 @@ jps | grep QuorumPeerMain
 
 [source,bash]
 ----
-$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/ids
+$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids
 ----
 
 === List broker details
 
 [source,bash]
 ----
-$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/ids/{id}
+$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids/{id}
 ----
 
 === List topics
 
 [source,bash]
 ----
-$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/topics
+$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/topics
 ----
 
 == Topic Operations
@@ -154,7 +156,7 @@ $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST:2181 ls /brokers/topics
 ----
 $KAFKA_BIN/kafka-topics.sh \
     --list \
-    --zookeeper $ZOOKEEPER_HOST:2181
+    --zookeeper $ZOOKEEPER_HOST
 ----
 
 === Describe topic
@@ -162,7 +164,7 @@ $KAFKA_BIN/kafka-topics.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-topics.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --topic <topic_name> \
     --describe
 ----
@@ -173,7 +175,7 @@ $KAFKA_BIN/kafka-topics.sh \
 ----
 $KAFKA_BIN/kafka-topics.sh \
     --create \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --replication-factor 1 \
     --partitions 1 \
     --topic <topic_name>
@@ -186,7 +188,7 @@ $KAFKA_BIN/kafka-topics.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-topics.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --topic <topic_name>\
     --config retention.ms=1000
@@ -197,7 +199,7 @@ $KAFKA_BIN/kafka-topics.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-topics.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --topic <topic_name> \
     --config min.insync.replicas=2
@@ -208,7 +210,7 @@ $KAFKA_BIN/kafka-topics.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-topics.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --topic <topic_name> \
     --delete-config retention.ms
@@ -219,7 +221,7 @@ $KAFKA_BIN/kafka-topics.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-topics.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --describe \
     --under-replicated-partitions
 ----
@@ -230,7 +232,7 @@ $KAFKA_BIN/kafka-topics.sh \
 ----
 $KAFKA_BIN/kafka-topics.sh \
     --delete \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --topic <topic_name>
 ----
 
@@ -240,7 +242,7 @@ $KAFKA_BIN/kafka-topics.sh \
 ----
 $KAFKA_BIN/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
-    --broker-list $BROKER_HOST:9092 \
+    --broker-list $BROKER_HOST \
     --topic <topic_name> \
     --time -2
 ----
@@ -251,7 +253,7 @@ $KAFKA_BIN/kafka-run-class.sh \
 ----
 $KAFKA_BIN/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
-    --broker-list $BROKER_HOST:9092 \
+    --broker-list $BROKER_HOST \
     --topic <topic_name> \
     --time -1
 ----
@@ -273,12 +275,12 @@ $KAFKA_BIN/kafka-topics.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-reassign-partitions.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file increase-replication-factor.json  \
     --execute
 
 $KAFKA_BIN/kafka-reassign-partitions.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file increase-replication-factor.json  \
     --verify
 ----
@@ -288,7 +290,7 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-topics.sh \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --describe \
     --unavailable-partitions
 ----
@@ -301,7 +303,7 @@ $KAFKA_BIN/kafka-topics.sh \
 ----
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --list \
-    --bootstrap-server $BROKER_HOST:9092
+    --bootstrap-server $BROKER_HOST
 ----
 
 === Describe consumer groups
@@ -311,7 +313,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 $KAFKA_BIN/kafka-consumer-groups.sh \
     --describe \
     --group <group_id> \
-    --bootstrap-server $BROKER_HOST:9092
+    --bootstrap-server $BROKER_HOST
 ----
 
 === Consuming message from the beginning
@@ -319,7 +321,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-console-consumer.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --topic <topic_name> \
     --from-beginning
 ----
@@ -329,7 +331,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-console-consumer.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --topic <topic_name>
 ----
 
@@ -338,7 +340,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-console-consumer.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --topic <topic_name> \
     --max-messages 1
 ----
@@ -348,7 +350,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-console-consumer.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --topic __consumer_offsets \
     --formatter 'kafka.coordinator.group.GroupMetadataManager$OffsetsMessageFormatter' \
     --max-messages 1
@@ -360,7 +362,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 ----
 $KAFKA_BIN/kafka-console-consumer.sh \
     --topic <topic_name> \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --group <group-id>
 ----
 
@@ -369,7 +371,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --group <group_id> \
     --describe
 ----
@@ -384,7 +386,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 # --shift-by <positive_or_negative_integer> / --to-current / --to-latest / --to-offset <offset_integer>
 # --to-datetime <datetime_string> --by-duration <duration_string>
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --group <group_id> \
     --topic <topic_name> \
     --reset-offsets \
@@ -397,7 +399,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --all-groups \
     --reset-offsets \
     --topic <topic_name> \
@@ -409,7 +411,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --group <groud_id> \
     --reset-offsets \
     --shift-by 2 \
@@ -422,7 +424,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --group <groud_id> \
     --reset-offsets \
     --shift-by -2 \
@@ -435,7 +437,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-consumer-groups.sh \
-    --bootstrap-server $BROKER_HOST:9092 \
+    --bootstrap-server $BROKER_HOST \
     --describe \
     --group <group_id>
 ----
@@ -445,7 +447,7 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
-    --zookeeper $ZOOKEEPER_HOST:2181 \
+    --zookeeper $ZOOKEEPER_HOST \
     --group <group_id> \
     --topic <topic_name>
 ----
@@ -457,7 +459,7 @@ $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-console-producer.sh \
-    --broker-list $BROKER_HOST:9092 \
+    --broker-list $BROKER_HOST \
     --topic <topic_name> < messages.txt
 ----
 
@@ -466,7 +468,7 @@ $KAFKA_BIN/kafka-console-producer.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-console-producer \
-    --broker-list $BROKER_HOST:9092 \
+    --broker-list $BROKER_HOST \
     --topic <topic_name>
 ----
 
@@ -475,7 +477,7 @@ $KAFKA_BIN/kafka-console-producer \
 [source,bash]
 ----
 echo "My Message" | $KAFKA_BIN/kafka-console-producer.sh \
-    --broker-list $BROKER_HOST:9092 \
+    --broker-list $BROKER_HOST \
     --topic <topic_name>
 ----
 
@@ -484,7 +486,7 @@ echo "My Message" | $KAFKA_BIN/kafka-console-producer.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-console-producer.sh \
-    --broker-list $BROKER_HOST:9092 \
+    --broker-list $BROKER_HOST \
     --topic <topic_name> \
     --producer-property acks=all
 ----
@@ -494,7 +496,7 @@ $KAFKA_BIN/kafka-console-producer.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-acls.sh \
-    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST:2181 \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --add \
     --allow-principal User:Gus \
     --consumer \
@@ -505,7 +507,7 @@ $KAFKA_BIN/kafka-acls.sh \
 [source,bash]
 ----
 $KAFKA_BIN/kafka-acls.sh
-    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST:2181 \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --add \
     --allow-principal User:Gus \
     --producer \
@@ -517,7 +519,7 @@ $KAFKA_BIN/kafka-acls.sh
 [source,bash]
 ----
 $KAFKA_BIN/kafka-acls.sh \
-    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST:2181 \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --list \
     --topic <topic_name>
 ----
