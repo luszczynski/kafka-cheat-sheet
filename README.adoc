@@ -366,6 +366,17 @@ $KAFKA_BIN/kafka-console-consumer.sh \
     --max-messages 1
 ----
 
+=== Describe __consumer_offsets
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-run-class.sh kafka.admin.ConsumerGroupCommand \
+    --bootstrap-server $BROKER_HOST \
+    --group <group-id> \
+    --new-consumer \
+    --describe
+----
+
 === Consume using consumer group
 
 [source,bash]
