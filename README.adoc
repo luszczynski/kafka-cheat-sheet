@@ -218,6 +218,18 @@ $KAFKA_BIN/kafka-configs.sh \
     --describe
 ----
 
+=== Disable hostname verification
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker-id> \
+    --alter \
+    --add-config "listener.name.internal.ssl.endpoint.identification.algorithm="
+----
+
 == Topic Operations
 
 === List topics using kafka-topics.sh
@@ -918,4 +930,53 @@ $KAFKA_BIN/kafka-mirror-maker.sh \
     --consumer.config consumer.properties \
     --producer.config producer.properties \
     --whitelist <topic_name>
+----
+
+== Delegation Token
+
+=== Create token
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --create \
+    --max-life-time-period -1 \
+    --command-config client.properties \
+    --renewer-principal User:<user>
+----
+
+=== Renew token
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --renew \
+    --renew-time-period -1 \
+    --command-config client.properties \
+    --hmac ABCDEFGHIJK
+----
+
+=== Expire token
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --expire \
+    --expiry-time-period -1 \
+    --command-config client.properties \
+    --hmac ABCDEFGHIJK
+----
+
+=== Describe token
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --command-config client.properties \
+    --owner-principal User:<user1>
 ----
