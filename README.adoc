@@ -158,6 +158,66 @@ $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids/{id}
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/topics
 ----
 
+=== Change Broker Config
+
+Change log cleaner threads.
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker id> \
+    --alter \
+    --add-config log.cleaner.threads=2
+----
+
+=== Describe broker dynamic config
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker id> \
+    --describe
+----
+
+=== Delete broker config
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker id> \
+    --alter \
+    --delete-config log.cleaner.threads
+----
+
+=== Change cluster-wide dynamic config
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-default \
+    --alter \
+    --add-config log.cleaner.threads=2
+----
+
+=== Describe cluster-wide dynamic config
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-default \
+    --describe
+----
+
 == Topic Operations
 
 === List topics using kafka-topics.sh
@@ -179,6 +239,15 @@ $KAFKA_BIN/kafka-topics.sh \
     --describe
 ----
 
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --describe
+----
+
 === Create topic
 
 [source,bash]
@@ -189,6 +258,20 @@ $KAFKA_BIN/kafka-topics.sh \
     --replication-factor 1 \
     --partitions 1 \
     --topic <topic_name>
+----
+
+==== Create topic with config
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-topics.sh \
+    --bootstrap-server $BROKER_HOST \
+    --create \
+    --topic <topic_name> \
+    --partitions 1 \
+    --replication-factor 1 \
+    --config max.message.bytes=64000 \
+    --config flush.messages=1
 ----
 
 === Alter topic
@@ -215,6 +298,18 @@ $KAFKA_BIN/kafka-topics.sh \
     --config min.insync.replicas=2
 ----
 
+==== Alter max.message.bytes
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --alter \
+    --add-config max.message.bytes=128000
+----
+
 ==== Delete retention time
 
 [source,bash]
@@ -223,6 +318,16 @@ $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --topic <topic_name> \
+    --delete-config retention.ms
+----
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \ 
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --alter \
     --delete-config retention.ms
 ----
 
@@ -243,6 +348,14 @@ $KAFKA_BIN/kafka-topics.sh \
 $KAFKA_BIN/kafka-topics.sh \
     --delete \
     --zookeeper $ZOOKEEPER_HOST \
+    --topic <topic_name>
+----
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-topics.sh \
+    --bootstrap-server $BROKER_HOST \
+    --delete \
     --topic <topic_name>
 ----
 
@@ -326,6 +439,51 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST
 ----
 
+=== Delete consumer group
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --delete \
+    --group <group-id-1> \
+    --group <group-id-2>
+----
+
+=== Active member in a consumer group
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --group <group-id> \
+    --members
+----
+
+=== Partition Assigned to each member
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --group <group_id> \
+    --members \
+    --verbose
+----
+
+=== Consumer Group State
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --group <group-id> \
+    --state
+----
+
 === Consuming message from the beginning
 
 [source,bash]
@@ -398,6 +556,18 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 ----
 
 === Reset offset
+
+==== Reset to the latest offset
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --reset-offsets \
+    --group <group-id> \
+    --topic topic1 \
+    --to-latest
+----
 
 ==== Reset offset for a consumer group in a topic
 
@@ -543,4 +713,16 @@ $KAFKA_BIN/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --list \
     --topic <topic_name>
+----
+
+== Mirror Maker
+
+=== Mirror topic
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-mirror-maker.sh \
+    --consumer.config consumer.properties \
+    --producer.config producer.properties \
+    --whitelist <topic_name>
 ----
