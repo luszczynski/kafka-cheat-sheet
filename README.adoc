@@ -889,28 +889,78 @@ $KAFKA_BIN/kafka-configs.sh \
 
 == ACLs
 
+=== Allow <user1> and <user2> to read and write
+
 [source,bash]
 ----
 $KAFKA_BIN/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --add \
-    --allow-principal User:Gus \
-    --consumer \
-    --topic <topic_name> \
-    --group <group_id>
-----
-
-[source,bash]
-----
-$KAFKA_BIN/kafka-acls.sh
-    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
-    --add \
-    --allow-principal User:Gus \
-    --producer \
+    --allow-principal User:<user1> \
+    --allow-principal User:<user2> \
+    --allow-host <ip-address1> \
+    --allow-host <ip-address2> \
+    --operation Read \
+    --operation Write \
     --topic <topic_name>
 ----
 
-=== List topics ACLs
+=== Allow all read from topic but <user1>
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --add \
+    --allow-principal User:* \
+    --allow-host * \
+    --deny-principal User:<user1> \
+    --deny-host <ip-address> \
+    --operation Read \
+    --topic <topic_name>
+----
+
+=== Allow <user1> to produce on all topics
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --add \
+    --allow-principal User:<user1> \
+    --allow-host <ip-address> \
+    --producer --topic *
+----
+
+=== Allow <user1> to consume on all topics
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --add \
+    --allow-principal User:<user1> \
+    --allow-host <ip-address> \
+    --consume --topic *
+----
+
+===  Remove ACL for <user1> and <user2> to read and write
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --remove \
+    --allow-principal User:<user1> \
+    --allow-principal User:<user2> \
+    --allow-host <ip-address1> \
+    --allow-host <ip-address2> \
+    --operation Read \
+    --operation Write \
+    --topic <topic_name>
+----
+
+=== List ACLs on specific topic
 
 [source,bash]
 ----
@@ -918,6 +968,16 @@ $KAFKA_BIN/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --list \
     --topic <topic_name>
+----
+
+=== List ACLs on all topics
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --list \
+    --topic *
 ----
 
 == Mirror Maker
