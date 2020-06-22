@@ -762,6 +762,119 @@ $KAFKA_BIN/kafka-console-producer.sh \
     --producer-property acks=all
 ----
 
+== Quotas
+
+=== Add quota for user and client-id
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-name <user> \
+    --entity-type clients \
+    --entity-name <client-id>
+----
+
+=== Add quota for user
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-name <user>
+----
+
+=== Add quota for client-id
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type clients \
+    --entity-name <client-id>
+----
+
+=== Add default client-id quota for user
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-name <user> \
+    --entity-type clients \
+    --entity-default
+----
+
+=== Add default quota for user
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-default
+----
+
+=== Add default quota for client-id
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type clients \
+    --entity-default
+----
+
+=== Describe quota for user and client-id
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --entity-type users \
+    --entity-name <user> \
+    --entity-type clients \
+    --entity-name <cliente-id>
+----
+
+=== Describe quota for a user
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --entity-type users \
+    --entity-name <user>
+----
+
+=== Describe quota for a client
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --entity-type clients \
+    --entity-name <client-id>
+----
+
 == ACLs
 
 [source,bash]
