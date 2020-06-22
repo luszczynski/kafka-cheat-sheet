@@ -248,6 +248,55 @@ $KAFKA_BIN/kafka-configs.sh \
     --describe
 ----
 
+=== Move topic to another broker
+
+==== Create json necessary
+
+.topics-to-move.json
+[source,json]
+----
+{"topics": [{"topic": "topic1"},
+            {"topic": "topic2"}],
+"version":1
+}
+----
+
+==== Generate plan to move to brokers
+
+.generate plan to move to broker 5 and 6
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --topics-to-move-json-file topics-to-move.json \
+    --broker-list "5,6" \
+    --generate
+----
+
+NOTE: save the results from the command above to `cluster-reassignment.json`
+
+==== Move to broker 5 and 6
+
+.move to broker 5 and 6
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file cluster-reassignment.json \
+    --execute
+----
+
+==== Verify status
+
+.verify status
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file expand-cluster-reassignment.json \
+    --verify
+----
+
 === Create topic
 
 [source,bash]
