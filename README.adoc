@@ -293,7 +293,7 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 ----
 $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
-    --reassignment-json-file expand-cluster-reassignment.json \
+    --reassignment-json-file cluster-reassignment.json \
     --verify
 ----
 
@@ -440,6 +440,37 @@ $KAFKA_BIN/kafka-topics.sh \
     --alter \
     --topic <topic_name> \
     --partitions 8
+----
+
+=== Increase replication factor
+
+.new-replication-factor.json
+[source,json]
+----
+{"version":1,"partitions":[{"topic":"topic1","partition":0,"replicas":[5,6,7]}]}
+----
+
+.execute new replication factor
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file new-replication-factor.json \
+    --execute
+----
+
+.verify status of partition reassignment
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file new-replication-factor.json \
+    --verify
+
+$KAFKA_BIN/kafka-topics.sh \
+    --bootstrap-server $ZOOKEEPER_HOST \
+    --topic <topic_name> \
+    --describe
 ----
 
 === Reassign partitions
