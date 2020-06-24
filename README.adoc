@@ -321,7 +321,7 @@ $KAFKA_BIN/kafka-topics.sh \
     --topic <topic_name>
 ----
 
-==== Create topic with config
+=== Create topic with config
 
 [source,bash]
 ----
@@ -333,6 +333,89 @@ $KAFKA_BIN/kafka-topics.sh \
     --replication-factor 1 \
     --config max.message.bytes=64000 \
     --config flush.messages=1
+----
+
+=== Increase replication factor of __consumer_offsets
+
+==== Create replication plan
+
+.reassignment.json
+[source,json]
+----
+{"version":1,
+ "partitions":[
+   {"topic":"__consumer_offsets", "partition":0,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":1,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":2,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":3,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":4,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":5,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":6,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":7,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":8,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":9,  "replicas":[106,101,102,105]},
+   {"topic":"__consumer_offsets", "partition":10, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":11, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":12, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":13, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":14, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":15, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":16, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":17, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":18, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":19, "replicas":[101,102,103,105]},
+   {"topic":"__consumer_offsets", "partition":20, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":21, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":22, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":23, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":24, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":25, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":26, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":27, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":28, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":29, "replicas":[102,103,104,105]},
+   {"topic":"__consumer_offsets", "partition":30, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":31, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":32, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":33, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":34, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":35, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":36, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":37, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":38, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":39, "replicas":[103,104,106,105]},
+   {"topic":"__consumer_offsets", "partition":40, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":41, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":42, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":43, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":44, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":45, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":46, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":47, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":48, "replicas":[104,106,101,105]},
+   {"topic":"__consumer_offsets", "partition":49, "replicas":[104,106,101,105]}
+ ]
+}
+----
+
+==== Increase partition
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file reassignment.json \
+    --execute
+----
+
+==== Verify reassignment
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file reassignment.json \
+    --verify
 ----
 
 === Alter topic
