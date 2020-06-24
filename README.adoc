@@ -6,6 +6,13 @@ Here you have some useful commands for kafka.
 
 Tested on Kafka 2.5
 
+Goals
+
+- [x] Add most useful commands for kafka
+- [ ] Add kafkacat commands
+- [ ] Add commands output
+- [ ] Add commands for Kafka on Kubernetes
+
 toc::[]
 
 == Pre-req
