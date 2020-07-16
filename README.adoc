@@ -1,6 +1,7 @@
 = Kafka Cheat Sheet
 :toc:
 :toc-placement!:
+:icons:
 
 Here you have some useful commands for kafka.
 
@@ -9,7 +10,7 @@ Tested on Kafka 2.5
 Goals
 
 - [x] Add most useful commands for kafka
-- [ ] Add kafkacat commands
+- [x] Add kafkacat commands
 - [ ] Add commands output
 - [ ] Add commands for Kafka on Kubernetes
 
@@ -151,6 +152,11 @@ jps | grep QuorumPeerMain
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids
 ----
 
+[source,bash]
+----
+kafkacat -b $BROKER_HOST -L
+----
+
 === List broker details
 
 [source,bash]
@@ -158,11 +164,21 @@ $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids/{id}
 ----
 
+[source,bash]
+----
+kafkacat -b $BROKER_HOST -L
+----
+
 === List topics
 
 [source,bash]
 ----
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/topics
+----
+
+[source,bash]
+----
+kafkacat -b $BROKER_HOST -L -t <my-topic>
 ----
 
 === Change Broker Config
@@ -248,6 +264,13 @@ $KAFKA_BIN/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST
 ----
 
+[source,bash]
+----
+$KAFKA_BIN/kafka-topics.sh \
+    --bootstrap-server $BROKER_HOST \
+    --list
+----
+
 === Describe topic
 
 [source,bash]
@@ -260,11 +283,30 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+kafkacat -b $BROKER_HOST -L -t <topic_name>
+----
+
+[source,bash]
+----
 $KAFKA_BIN/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --entity-type topics \
     --entity-name <topic_name> \
     --describe
+----
+
+=== Copy topic to another topic in the same cluster
+
+[source,bash]
+----
+kafkacat -C -b $BROKER_HOST -t <topic_name> -e | kafkacat -P -b $BROKER_HOST -t <topic-name2>
+----
+
+=== Copy topic to another topic in another cluster
+
+[source,bash]
+----
+kafkacat -C -b $BROKER_HOST -t <topic_name> -e | kafkacat -P -b $BROKER_HOST2 -t <topic-name>
 ----
 
 === Move topic to another broker
@@ -666,6 +708,27 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
     --state
 ----
 
+=== Consuming message
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic_name>
+----
+
+[source,bash]
+----
+kafkacat -C -b $BROKER_HOST -t <topic_name>
+----
+
+=== Consuming message and formating output
+
+[source,bash]
+----
+kafkacat -C -b $BROKER_HOST -t <topic_name> -q -f 'Topic %t using partition %p at offset %o has key = %k and value = %S'
+----
+
 === Consuming message from the beginning
 
 [source,bash]
@@ -685,6 +748,13 @@ $KAFKA_BIN/kafka-console-consumer.sh \
     --topic <topic_name>
 ----
 
+=== Consuming message and show output in JSON
+
+[source,bash]
+----
+kafkacat -b $BROKER_HOST -t <topic_name> -J
+----
+
 === Read one message
 
 [source,bash]
@@ -693,6 +763,20 @@ $KAFKA_BIN/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST \
     --topic <topic_name> \
     --max-messages 1
+----
+
+=== Read the last 2 messages from topic and then exit
+
+[source,bash]
+----
+kafkacat -C -b $BROKER_HOST -t <topic_name> -o -2 -e
+----
+
+=== Read the last 2 messages from partition 0
+
+[source,bash]
+----
+kafkacat -C -b $BROKER_HOST -t <topic_name> -o -2 -e -p 0
 ----
 
 === Read from __consumer_offsets
@@ -836,6 +920,11 @@ $KAFKA_BIN/kafka-console-producer.sh \
     --topic <topic_name> < messages.txt
 ----
 
+[source,bash]
+----
+kafkacat -P -l -b $BROKER_HOST -t <topic_name> messages.txt
+----
+
 === Send message using standard input
 
 [source,bash]
@@ -845,6 +934,25 @@ $KAFKA_BIN/kafka-console-producer \
     --topic <topic_name>
 ----
 
+[source,bash]
+----
+kafkacat -P -b $BROKER_HOST -t <topic_name>
+----
+
+=== Send message using snappy compression
+
+[source,bash]
+----
+kafkacat -P -b $BROKER_HOST -t <topic_name> -z snappy
+----
+
+=== Send 200 messages to a topic
+
+[source,bash]
+----
+seq 200 | kafkacat -P -b $BROKER_HOST -t <topic_name>
+----
+
 === Send message using string
 
 [source,bash]
@@ -852,6 +960,19 @@ $KAFKA_BIN/kafka-console-producer \
 echo "My Message" | $KAFKA_BIN/kafka-console-producer.sh \
     --broker-list $BROKER_HOST \
     --topic <topic_name>
+----
+
+[source,bash]
+----
+echo "My Message" | kafkacat -b $BROKER_HOST -t <topic_name>
+----
+
+=== Send message using headers
+
+[source,bash]
+----
+echo "My Message" | kafkacat -b $BROKER_HOST -t <topic_name>
+echo "My Message" | kafkacat -b $BROKER_HOST -H "header1=value1" -H "header2=value2"
 ----
 
 === Send message using ack=all
