@@ -576,7 +576,7 @@ $KAFKA_BIN/kafka-run-class.sh \
 
 == Partition Operations
 
-=== Add partitions
+=== Increase partition number
 
 [source,bash]
 ----
