@@ -663,6 +663,16 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST
 ----
 
+=== Describe all consumer groups
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-consumer-groups.sh \
+    --describe \
+    --bootstrap-server $BROKER_HOST \
+    --all-groups
+----
+
 === Delete consumer group
 
 [source,bash]
