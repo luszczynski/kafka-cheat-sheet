@@ -588,6 +588,28 @@ $KAFKA_BIN/kafka-topics.sh \
 
 === Increase replication factor
 
+.topics.json
+[source,json]
+----
+{
+    "topics": [
+        {
+            "topic": "test"
+        }
+    ],
+    "version": 1
+}
+----
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --generate \
+    --broker-list "401,402,601" \
+    --topics-to-move-json-file topics.json
+----
+
 .new-replication-factor.json
 [source,json]
 ----
@@ -619,16 +641,42 @@ $KAFKA_BIN/kafka-topics.sh \
 
 === Reassign partitions
 
+Create plan
+
+.topics.json
+[source,json]
+----
+{
+    "topics": [
+        {
+            "topic": "test"
+        }
+    ],
+    "version": 1
+}
+----
+
 [source,bash]
 ----
 $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
-    --reassignment-json-file increase-replication-factor.json  \
+    --generate \
+    --broker-list "401,402,601" \
+    --topics-to-move-json-file topics.json
+----
+
+Save the result of the above command to a file named replicas.json
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file replicas.json  \
     --execute
 
 $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
-    --reassignment-json-file increase-replication-factor.json  \
+    --reassignment-json-file replicas.json  \
     --verify
 ----
 
