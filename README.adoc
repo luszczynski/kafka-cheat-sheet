@@ -286,6 +286,8 @@ $KAFKA_BIN/kafka-topics.sh \
 kafkacat -b $BROKER_HOST -L -t <topic_name>
 ----
 
+=== Describe topic configs
+
 [source,bash]
 ----
 $KAFKA_BIN/kafka-configs.sh \
@@ -293,6 +295,17 @@ $KAFKA_BIN/kafka-configs.sh \
     --entity-type topics \
     --entity-name <topic_name> \
     --describe
+----
+
+=== Delete topic config
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --delete-config <config>
 ----
 
 === Copy topic to another topic in the same cluster
@@ -813,6 +826,17 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 kafkacat -b $BROKER_HOST -t <topic_name> -J
 ----
 
+=== Consuming and showing message key
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic_name> \
+    --property print.key=true \
+    --property key.separator=,
+----
+
 === Read one message
 
 [source,bash]
@@ -1042,6 +1066,19 @@ $KAFKA_BIN/kafka-console-producer.sh \
     --topic <topic_name> \
     --producer-property acks=all
 ----
+
+=== Send message with key
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-console-producer.sh \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name> \
+    --property parse.key=true \
+    --property key.separator=,
+----
+
+NOTE: Your message should be: <mykey>,<message>. For example: Gus,1000.
 
 == Quotas
 
