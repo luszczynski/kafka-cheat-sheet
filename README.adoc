@@ -152,6 +152,13 @@ jps | grep QuorumPeerMain
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids
 ----
 
+=== List Broker Controller
+
+[source,bash]
+----
+$KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST get /controller
+----
+
 [source,bash]
 ----
 kafkacat -b $BROKER_HOST -L
