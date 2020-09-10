@@ -710,6 +710,27 @@ $KAFKA_BIN/kafka-topics.sh \
     --unavailable-partitions
 ----
 
+=== Force election on all partitions
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-leader-election.sh \
+    --election-type preferred \
+    --bootstrap-server $BROKER_HOST \
+    --all-topic-partitions
+----
+
+=== Force election on specific topic and partition
+
+[source,bash]
+----
+$KAFKA_BIN/kafka-leader-election.sh \
+    --election-type preferred \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic name> \
+    --partition <partition id>
+----
+
 == Consumer
 
 === List consumer groups
