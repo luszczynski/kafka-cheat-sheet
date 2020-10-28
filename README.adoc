@@ -12,7 +12,7 @@ Goals
 - [x] Add most useful commands for kafka
 - [x] Add kafkacat commands
 - [ ] Add commands output
-- [ ] Add commands for Kafka on Kubernetes
+- [x] Add commands for Kafka on Kubernetes
 
 toc::[]
 
@@ -22,9 +22,17 @@ First, set some kafka environment vars.
 
 [source,bash]
 ----
+# For Kafka running on top of VMs/Bare Metal
 KAFKA_BIN=/opt/kafka/bin
 ZOOKEEPER_HOST=zookeeper-host:2181
 BROKER_HOST=broker-host:9092
+
+# For Kafka running on top of Kubernetes (Using strimzi)
+KAFKA_NAMESPACE=kafka-demo
+ZOOKEEPER_HOST=localhost:2181
+BROKER_HOST=localhost:9092
+ZOOKEEPER_POD=$(kubectl -n $KAFKA_NAMESPACE get pods -l app.kubernetes.io/name=zookeeper -o=jsonpath='{.items[0].metadata.name}')
+KAFKA_BROKER_POD=$(kubectl -n $KAFKA_NAMESPACE get pods -l app.kubernetes.io/name=kafka -o=jsonpath='{.items[0].metadata.name}')
 ----
 
 == Zookeeper Operations
@@ -66,81 +74,125 @@ NOTE: Remember to change your zookeeper port on the `ZOOKEEPER_HOST` if necessar
 
 [source,bash]
 ----
+# For VMs
 echo conf | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo conf | curl telnet://localhost:2181"
 ----
 
 === Get runtime environments
 
 [source,bash]
 ----
+# For VMs
 echo envi | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo envi | curl telnet://localhost:2181"
 ----
 
 === Health Check
 
 [source,bash]
 ----
+# For VMs
 echo stats | curl telnet://$ZOOKEEPER_HOST
-
 echo ruok | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo stats | curl telnet://localhost:2181"
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo ruok | curl telnet://localhost:2181"
 ----
 
 === Connections
 
 [source,bash]
 ----
+# For VMs
 echo reqs | curl telnet://$ZOOKEEPER_HOST
-
 echo cons | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo reqs | curl telnet://localhost:2181"
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo cons | curl telnet://localhost:2181"
 ----
 
 === Details of the server
 
 [source,bash]
 ----
+# For VMs
 echo srvr | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo srvr | curl telnet://localhost:2181"
 ----
 
 === Brief info about watches
 
 [source,bash]
 ----
+# For VMs
 echo wchs | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo wchs | curl telnet://localhost:2181"
 ----
 
 === Details about watches
 
 [source,bash]
 ----
+# For VMs
 echo wchc | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo wchs | curl telnet://localhost:2181"
 ----
 
 === Snapshots info
 
 [source,bash]
 ----
+# For VMs
 echo dirs | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo dirs | curl telnet://localhost:2181"
 ----
 
 === Monitoring vars
 
 [source,bash]
 ----
+# For VMs
 echo mntr | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo mntr | curl telnet://localhost:2181"
 ----
 
 === Get read-only or read-write mode
 
 [source,bash]
 ----
+# For VMs
 echo isro | curl telnet://$ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bash -c "echo isro | curl telnet://localhost:2181"
 ----
 
 === Get Process
 
 [source,bash]
 ----
+# For VMs
 jps | grep QuorumPeerMain
+
+# For kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $ZOOKEEPER_POD -- bash -c "ps aux | grep QuorumPeerMain"
 ----
 
 == Broker Operations
@@ -149,7 +201,11 @@ jps | grep QuorumPeerMain
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/zookeeper-shell.sh localhost:2181 ls /brokers/ids
 ----
 
 [source,bash]
@@ -161,14 +217,22 @@ kafkacat -b $BROKER_HOST -L
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST get /controller
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/zookeeper-shell.sh localhost:2181 get /controller
 ----
 
 === List broker details
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/ids/{id}
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/zookeeper-shell.sh localhost:2181 ls /brokers/ids/{id}
 ----
 
 [source,bash]
@@ -180,7 +244,11 @@ kafkacat -b $BROKER_HOST -L
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/zookeeper-shell.sh $ZOOKEEPER_HOST ls /brokers/topics
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/zookeeper-shell.sh localhost:2181 ls /brokers/topics
 ----
 
 [source,bash]
@@ -194,7 +262,16 @@ Change log cleaner threads.
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker id> \
+    --alter \
+    --add-config log.cleaner.threads=2
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --bootstrap-server $BROKER_HOST \
     --entity-type brokers \
     --entity-name <broker id> \
@@ -206,7 +283,15 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker id> \
+    --describe
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --bootstrap-server $BROKER_HOST \
     --entity-type brokers \
     --entity-name <broker id> \
@@ -217,7 +302,16 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker id> \
+    --alter \
+    --delete-config log.cleaner.threads
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --bootstrap-server $BROKER_HOST \
     --entity-type brokers \
     --entity-name <broker id> \
@@ -229,7 +323,16 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-default \
+    --alter \
+    --add-config log.cleaner.threads=2
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --bootstrap-server $BROKER_HOST \
     --entity-type brokers \
     --entity-default \
@@ -241,7 +344,15 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-default \
+    --describe
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --bootstrap-server $BROKER_HOST \
     --entity-type brokers \
     --entity-default \
@@ -252,7 +363,16 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --bootstrap-server $BROKER_HOST \
+    --entity-type brokers \
+    --entity-name <broker-id> \
+    --alter \
+    --add-config "listener.name.internal.ssl.endpoint.identification.algorithm="
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --bootstrap-server $BROKER_HOST \
     --entity-type brokers \
     --entity-name <broker-id> \
@@ -266,23 +386,42 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --list \
+    --zookeeper $ZOOKEEPER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --list \
     --zookeeper $ZOOKEEPER_HOST
 ----
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
     --bootstrap-server $BROKER_HOST \
     --list
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
+    --list \
+    --bootstrap-server $BROKER_HOST
 ----
 
 === Describe topic
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --topic <topic_name> \
+    --describe
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --topic <topic_name> \
     --describe
@@ -297,7 +436,15 @@ kafkacat -b $BROKER_HOST -L -t <topic_name>
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --describe
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --entity-type topics \
     --entity-name <topic_name> \
@@ -308,7 +455,15 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --delete-config <config>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --entity-type topics \
     --entity-name <topic_name> \
@@ -347,11 +502,19 @@ kafkacat -C -b $BROKER_HOST -t <topic_name> -e | kafkacat -P -b $BROKER_HOST2 -t
 .generate plan to move to broker 5 and 6
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --topics-to-move-json-file topics-to-move.json \
     --broker-list "5,6" \
     --generate
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --delete-config <config>
 ----
 
 NOTE: save the results from the command above to `cluster-reassignment.json`
@@ -361,7 +524,14 @@ NOTE: save the results from the command above to `cluster-reassignment.json`
 .move to broker 5 and 6
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file cluster-reassignment.json \
+    --execute
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file cluster-reassignment.json \
     --execute
@@ -372,7 +542,14 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 .verify status
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file cluster-reassignment.json \
+    --verify
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file cluster-reassignment.json \
     --verify
@@ -382,7 +559,16 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --create \
+    --zookeeper $ZOOKEEPER_HOST \
+    --replication-factor 1 \
+    --partitions 1 \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --create \
     --zookeeper $ZOOKEEPER_HOST \
     --replication-factor 1 \
@@ -394,7 +580,18 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --bootstrap-server $BROKER_HOST \
+    --create \
+    --topic <topic_name> \
+    --partitions 1 \
+    --replication-factor 1 \
+    --config max.message.bytes=64000 \
+    --config flush.messages=1
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --bootstrap-server $BROKER_HOST \
     --create \
     --topic <topic_name> \
@@ -471,7 +668,14 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file reassignment.json \
+    --execute
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file reassignment.json \
     --execute
@@ -481,7 +685,14 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file reassignment.json \
+    --verify
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file reassignment.json \
     --verify
@@ -493,7 +704,15 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --topic <topic_name>\
+    --config retention.ms=1000
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --topic <topic_name>\
@@ -504,7 +723,15 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --topic <topic_name> \
+    --config min.insync.replicas=2
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --topic <topic_name> \
@@ -515,7 +742,16 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --alter \
+    --add-config max.message.bytes=128000
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --entity-type topics \
     --entity-name <topic_name> \
@@ -527,7 +763,15 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --topic <topic_name> \
+    --delete-config retention.ms
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --topic <topic_name> \
@@ -536,7 +780,16 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \ 
+    --entity-type topics \
+    --entity-name <topic_name> \
+    --alter \
+    --delete-config retention.ms
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \ 
     --entity-type topics \
     --entity-name <topic_name> \
@@ -548,7 +801,14 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --under-replicated-partitions
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --describe \
     --under-replicated-partitions
@@ -558,7 +818,14 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --delete \
+    --zookeeper $ZOOKEEPER_HOST \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --delete \
     --zookeeper $ZOOKEEPER_HOST \
     --topic <topic_name>
@@ -566,7 +833,14 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --bootstrap-server $BROKER_HOST \
+    --delete \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --bootstrap-server $BROKER_HOST \
     --delete \
     --topic <topic_name>
@@ -576,7 +850,15 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-run-class.sh \
+    kafka.tools.GetOffsetShell \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name> \
+    --time -2
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
     --broker-list $BROKER_HOST \
     --topic <topic_name> \
@@ -587,7 +869,15 @@ $KAFKA_BIN/kafka-run-class.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-run-class.sh \
+    kafka.tools.GetOffsetShell \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name> \
+    --time -1
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-run-class.sh \
     kafka.tools.GetOffsetShell \
     --broker-list $BROKER_HOST \
     --topic <topic_name> \
@@ -600,7 +890,14 @@ $KAFKA_BIN/kafka-run-class.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --alter \
+    --topic <topic_name> \
+    --partitions 8
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --alter \
     --topic <topic_name> \
     --partitions 8
@@ -623,7 +920,15 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --generate \
+    --broker-list "401,402,601" \
+    --topics-to-move-json-file topics.json
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --generate \
     --broker-list "401,402,601" \
@@ -639,7 +944,14 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 .execute new replication factor
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file new-replication-factor.json \
+    --execute
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file new-replication-factor.json \
     --execute
@@ -648,12 +960,24 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
 .verify status of partition reassignment
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file new-replication-factor.json \
     --verify
 
 $KAFKA_BIN/kafka-topics.sh \
+    --bootstrap-server $ZOOKEEPER_HOST \
+    --topic <topic_name> \
+    --describe
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file new-replication-factor.json \
+    --verify
+
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --bootstrap-server $ZOOKEEPER_HOST \
     --topic <topic_name> \
     --describe
@@ -678,7 +1002,15 @@ Create plan
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --generate \
+    --broker-list "401,402,601" \
+    --topics-to-move-json-file topics.json
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --generate \
     --broker-list "401,402,601" \
@@ -689,6 +1021,7 @@ Save the result of the above command to a file named replicas.json
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file replicas.json  \
@@ -698,13 +1031,31 @@ $KAFKA_BIN/kafka-reassign-partitions.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --reassignment-json-file replicas.json  \
     --verify
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file replicas.json  \
+    --execute
+
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-reassign-partitions.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --reassignment-json-file replicas.json  \
+    --verify
 ----
 
 === List unavailable partitions
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-topics.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --unavailable-partitions
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-topics.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --describe \
     --unavailable-partitions
@@ -714,7 +1065,14 @@ $KAFKA_BIN/kafka-topics.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-leader-election.sh \
+    --election-type preferred \
+    --bootstrap-server $BROKER_HOST \
+    --all-topic-partitions
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-leader-election.sh \
     --election-type preferred \
     --bootstrap-server $BROKER_HOST \
     --all-topic-partitions
@@ -724,7 +1082,15 @@ $KAFKA_BIN/kafka-leader-election.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-leader-election.sh \
+    --election-type preferred \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic name> \
+    --partition <partition id>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-leader-election.sh \
     --election-type preferred \
     --bootstrap-server $BROKER_HOST \
     --topic <topic name> \
@@ -737,7 +1103,13 @@ $KAFKA_BIN/kafka-leader-election.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --list \
+    --bootstrap-server $BROKER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --list \
     --bootstrap-server $BROKER_HOST
 ----
@@ -746,7 +1118,14 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --describe \
+    --group <group_id> \
+    --bootstrap-server $BROKER_HOST
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --describe \
     --group <group_id> \
     --bootstrap-server $BROKER_HOST
@@ -756,7 +1135,14 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --describe \
+    --bootstrap-server $BROKER_HOST \
+    --all-groups
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --describe \
     --bootstrap-server $BROKER_HOST \
     --all-groups
@@ -766,7 +1152,15 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --delete \
+    --group <group-id-1> \
+    --group <group-id-2>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --delete \
     --group <group-id-1> \
@@ -777,7 +1171,15 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --group <group-id> \
+    --members
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --describe \
     --group <group-id> \
@@ -788,7 +1190,16 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --group <group_id> \
+    --members \
+    --verbose
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --describe \
     --group <group_id> \
@@ -800,7 +1211,15 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --group <group-id> \
+    --state
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --describe \
     --group <group-id> \
@@ -811,7 +1230,13 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST \
     --topic <topic_name>
 ----
@@ -821,7 +1246,7 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 kafkacat -C -b $BROKER_HOST -t <topic_name>
 ----
 
-=== Consuming message and formating output
+=== Consuming message and formatting output
 
 [source,bash]
 ----
@@ -832,7 +1257,14 @@ kafkacat -C -b $BROKER_HOST -t <topic_name> -q -f 'Topic %t using partition %p a
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic_name> \
+    --from-beginning
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST \
     --topic <topic_name> \
     --from-beginning
@@ -842,7 +1274,13 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST \
     --topic <topic_name>
 ----
@@ -858,7 +1296,15 @@ kafkacat -b $BROKER_HOST -t <topic_name> -J
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic_name> \
+    --property print.key=true \
+    --property key.separator=,
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST \
     --topic <topic_name> \
     --property print.key=true \
@@ -869,7 +1315,14 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic <topic_name> \
+    --max-messages 1
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST \
     --topic <topic_name> \
     --max-messages 1
@@ -893,7 +1346,15 @@ kafkacat -C -b $BROKER_HOST -t <topic_name> -o -2 -e -p 0
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic __consumer_offsets \
+    --formatter 'kafka.coordinator.group.GroupMetadataManager$OffsetsMessageFormatter' \
+    --max-messages 1
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
     --bootstrap-server $BROKER_HOST \
     --topic __consumer_offsets \
     --formatter 'kafka.coordinator.group.GroupMetadataManager$OffsetsMessageFormatter' \
@@ -904,7 +1365,15 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-run-class.sh kafka.admin.ConsumerGroupCommand \
+    --bootstrap-server $BROKER_HOST \
+    --group <group-id> \
+    --new-consumer \
+    --describe
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-run-class.sh kafka.admin.ConsumerGroupCommand \
     --bootstrap-server $BROKER_HOST \
     --group <group-id> \
     --new-consumer \
@@ -915,7 +1384,14 @@ $KAFKA_BIN/kafka-run-class.sh kafka.admin.ConsumerGroupCommand \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-consumer.sh \
+    --topic <topic_name> \
+    --bootstrap-server $BROKER_HOST \
+    --group <group-id>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
     --topic <topic_name> \
     --bootstrap-server $BROKER_HOST \
     --group <group-id>
@@ -925,7 +1401,14 @@ $KAFKA_BIN/kafka-console-consumer.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --group <group_id> \
+    --describe
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --group <group_id> \
     --describe
@@ -937,7 +1420,16 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --reset-offsets \
+    --group <group-id> \
+    --topic topic1 \
+    --to-latest
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --reset-offsets \
     --group <group-id> \
@@ -949,10 +1441,20 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 # There are many other resetting options
 # --shift-by <positive_or_negative_integer> / --to-current / --to-latest / --to-offset <offset_integer>
 # --to-datetime <datetime_string> --by-duration <duration_string>
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --group <group_id> \
+    --topic <topic_name> \
+    --reset-offsets \
+    --to-earliest \
+    --execute
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --group <group_id> \
     --topic <topic_name> \
@@ -965,7 +1467,16 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --all-groups \
+    --reset-offsets \
+    --topic <topic_name> \
+    --to-earliest
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --all-groups \
     --reset-offsets \
@@ -977,7 +1488,17 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --group <groud_id> \
+    --reset-offsets \
+    --shift-by 2 \
+    --execute \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --group <groud_id> \
     --reset-offsets \
@@ -990,7 +1511,17 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --group <groud_id> \
+    --reset-offsets \
+    --shift-by -2 \
+    --execute \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --group <groud_id> \
     --reset-offsets \
@@ -1003,7 +1534,14 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-groups.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --group <group_id>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-groups.sh \
     --bootstrap-server $BROKER_HOST \
     --describe \
     --group <group_id>
@@ -1013,7 +1551,14 @@ $KAFKA_BIN/kafka-consumer-groups.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
+    --zookeeper $ZOOKEEPER_HOST \
+    --group <group_id> \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-offset-checker.sh  \
     --zookeeper $ZOOKEEPER_HOST \
     --group <group_id> \
     --topic <topic_name>
@@ -1025,7 +1570,13 @@ $KAFKA_BIN/kafka-consumer-offset-checker.sh  \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-producer.sh \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name> < messages.txt
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-producer.sh \
     --broker-list $BROKER_HOST \
     --topic <topic_name> < messages.txt
 ----
@@ -1039,7 +1590,13 @@ kafkacat -P -l -b $BROKER_HOST -t <topic_name> messages.txt
 
 [source,bash]
 ----
-$KAFKA_BIN/kafka-console-producer \
+# For VMs
+$KAFKA_BIN/kafka-console-producer.sh \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-producer.sh \
     --broker-list $BROKER_HOST \
     --topic <topic_name>
 ----
@@ -1067,7 +1624,13 @@ seq 200 | kafkacat -P -b $BROKER_HOST -t <topic_name>
 
 [source,bash]
 ----
+# For VMs
 echo "My Message" | $KAFKA_BIN/kafka-console-producer.sh \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-producer.sh \
     --broker-list $BROKER_HOST \
     --topic <topic_name>
 ----
@@ -1089,7 +1652,14 @@ echo "My Message" | kafkacat -b $BROKER_HOST -H "header1=value1" -H "header2=val
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-producer.sh \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name> \
+    --producer-property acks=all
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-producer.sh \
     --broker-list $BROKER_HOST \
     --topic <topic_name> \
     --producer-property acks=all
@@ -1099,7 +1669,15 @@ $KAFKA_BIN/kafka-console-producer.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-console-producer.sh \
+    --broker-list $BROKER_HOST \
+    --topic <topic_name> \
+    --property parse.key=true \
+    --property key.separator=,
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-producer.sh \
     --broker-list $BROKER_HOST \
     --topic <topic_name> \
     --property parse.key=true \
@@ -1114,7 +1692,18 @@ NOTE: Your message should be: <mykey>,<message>. For example: Gus,1000.
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-name <user> \
+    --entity-type clients \
+    --entity-name <client-id>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
@@ -1128,7 +1717,16 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-name <user>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
@@ -1140,7 +1738,16 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type clients \
+    --entity-name <client-id>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
@@ -1152,7 +1759,18 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-name <user> \
+    --entity-type clients \
+    --entity-default
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
@@ -1166,7 +1784,16 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type users \
+    --entity-default
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
@@ -1178,7 +1805,16 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --alter \
+    --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
+    --entity-type clients \
+    --entity-default
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --alter \
     --add-config 'producer_byte_rate=1024,consumer_byte_rate=2048,request_percentage=200' \
@@ -1190,7 +1826,17 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --entity-type users \
+    --entity-name <user> \
+    --entity-type clients \
+    --entity-name <cliente-id>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --describe \
     --entity-type users \
@@ -1203,7 +1849,15 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --entity-type users \
+    --entity-name <user>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --describe \
     --entity-type users \
@@ -1214,7 +1868,15 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-configs.sh \
+    --zookeeper $ZOOKEEPER_HOST \
+    --describe \
+    --entity-type clients \
+    --entity-name <client-id>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-configs.sh \
     --zookeeper $ZOOKEEPER_HOST \
     --describe \
     --entity-type clients \
@@ -1227,7 +1889,20 @@ $KAFKA_BIN/kafka-configs.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --add \
+    --allow-principal User:<user1> \
+    --allow-principal User:<user2> \
+    --allow-host <ip-address1> \
+    --allow-host <ip-address2> \
+    --operation Read \
+    --operation Write \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --add \
     --allow-principal User:<user1> \
@@ -1243,7 +1918,19 @@ $KAFKA_BIN/kafka-acls.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --add \
+    --allow-principal User:* \
+    --allow-host * \
+    --deny-principal User:<user1> \
+    --deny-host <ip-address> \
+    --operation Read \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --add \
     --allow-principal User:* \
@@ -1258,7 +1945,16 @@ $KAFKA_BIN/kafka-acls.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --add \
+    --allow-principal User:<user1> \
+    --allow-host <ip-address> \
+    --producer --topic *
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --add \
     --allow-principal User:<user1> \
@@ -1270,7 +1966,16 @@ $KAFKA_BIN/kafka-acls.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --add \
+    --allow-principal User:<user1> \
+    --allow-host <ip-address> \
+    --consume --topic *
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --add \
     --allow-principal User:<user1> \
@@ -1282,7 +1987,20 @@ $KAFKA_BIN/kafka-acls.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --remove \
+    --allow-principal User:<user1> \
+    --allow-principal User:<user2> \
+    --allow-host <ip-address1> \
+    --allow-host <ip-address2> \
+    --operation Read \
+    --operation Write \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --remove \
     --allow-principal User:<user1> \
@@ -1298,7 +2016,14 @@ $KAFKA_BIN/kafka-acls.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --list \
+    --topic <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --list \
     --topic <topic_name>
@@ -1308,7 +2033,14 @@ $KAFKA_BIN/kafka-acls.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-acls.sh \
+    --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
+    --list \
+    --topic *
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-acls.sh \
     --authorizer-properties zookeeper.connect=$ZOOKEEPER_HOST \
     --list \
     --topic *
@@ -1320,7 +2052,14 @@ $KAFKA_BIN/kafka-acls.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-mirror-maker.sh \
+    --consumer.config consumer.properties \
+    --producer.config producer.properties \
+    --whitelist <topic_name>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-mirror-maker.sh \
     --consumer.config consumer.properties \
     --producer.config producer.properties \
     --whitelist <topic_name>
@@ -1332,7 +2071,16 @@ $KAFKA_BIN/kafka-mirror-maker.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --create \
+    --max-life-time-period -1 \
+    --command-config client.properties \
+    --renewer-principal User:<user>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-delegation-tokens.sh \
     --bootstrap-server $BROKER_HOST \
     --create \
     --max-life-time-period -1 \
@@ -1344,7 +2092,16 @@ $KAFKA_BIN/kafka-delegation-tokens.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --renew \
+    --renew-time-period -1 \
+    --command-config client.properties \
+    --hmac ABCDEFGHIJK
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-delegation-tokens.sh \
     --bootstrap-server $BROKER_HOST \
     --renew \
     --renew-time-period -1 \
@@ -1356,7 +2113,16 @@ $KAFKA_BIN/kafka-delegation-tokens.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --expire \
+    --expiry-time-period -1 \
+    --command-config client.properties \
+    --hmac ABCDEFGHIJK
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-delegation-tokens.sh \
     --bootstrap-server $BROKER_HOST \
     --expire \
     --expiry-time-period -1 \
@@ -1368,7 +2134,15 @@ $KAFKA_BIN/kafka-delegation-tokens.sh \
 
 [source,bash]
 ----
+# For VMs
 $KAFKA_BIN/kafka-delegation-tokens.sh \
+    --bootstrap-server $BROKER_HOST \
+    --describe \
+    --command-config client.properties \
+    --owner-principal User:<user1>
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-delegation-tokens.sh \
     --bootstrap-server $BROKER_HOST \
     --describe \
     --command-config client.properties \
