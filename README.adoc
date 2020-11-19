@@ -1380,6 +1380,25 @@ kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-run
     --describe
 ----
 
+=== Read from __transaction_state
+
+[source,bash]
+----
+# For VMs
+$KAFKA_BIN/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --formatter "kafka.coordinator.transaction.TransactionLog\$TransactionLogMessageFormatter" \
+    --topic __transaction_state \
+    --from-beginning
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-console-consumer.sh \
+    --bootstrap-server $BROKER_HOST \
+    --topic __transaction_state \
+    --from-beginning \
+    --formatter "kafka.coordinator.transaction.TransactionLog\$TransactionLogMessageFormatter"
+----
+
 === Consume using consumer group
 
 [source,bash]
