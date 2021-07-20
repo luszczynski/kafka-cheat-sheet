@@ -2167,3 +2167,52 @@ kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-del
     --command-config client.properties \
     --owner-principal User:<user1>
 ----
+
+== Performance Test
+
+=== Producer
+
+[source,bash]
+----
+# For VMs
+$KAFKA_BIN/kafka-producer-perf-test.sh \
+    --topic teste \
+    --num-records 50000000 \
+    --record-size 100 \
+    --throughput -1 \
+    --producer-props acks=all bootstrap.servers=$BROKER_HOST buffer.memory=67108864 batch.size=8196
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-producer-perf-test.sh \
+    --topic teste \
+    --num-records 50000000 \
+    --record-size 100 \
+    --throughput -1 \
+    --producer-props acks=all bootstrap.servers=$BROKER_HOST buffer.memory=67108864 batch.size=8196
+----
+
+=== Consumer
+
+[source,bash]
+----
+# For VMs
+$KAFKA_BIN/kafka-consumer-perf-test.sh \
+    --group grupo \
+    --print-metrics \
+    --show-detailed-stats \
+    --topic teste \
+    --messages 600000 \
+    --broker-list $BROKER_HOST \
+    --timeout 1000000
+
+# For Kubernetes
+kubectl -n $KAFKA_NAMESPACE exec -it $KAFKA_BROKER_POD -c kafka -- bin/kafka-consumer-perf-test.sh \
+    --group grupo \
+    --print-metrics \
+    --show-detailed-stats \
+    --topic teste \
+    --messages 600000 \
+    --broker-list $BROKER_HOST \
+    --timeout 1000000
+----
+
